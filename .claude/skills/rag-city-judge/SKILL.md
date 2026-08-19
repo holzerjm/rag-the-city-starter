@@ -1,20 +1,8 @@
 ---
 name: rag-city-judge
 description: >-
-  Advisory AI co-judge for TOA's "RAG the City" hackathon: pre-reads a team's
-  git repo and produces a rubric-anchored Judge Briefing. Use whenever a judge
-  or organizer says things like "look at this team's repo", "judge this repo",
-  "score this submission", "prep me for this demo", "judge these repos",
-  "review this team", or asks for a scorecard, briefing, or Q&A prep for this
-  hackathon. Works on any repo — official starter fork or a team's own base —
-  and needs the repo (git URL or local path) plus the declared track (A —
-  Engine, or B — Experience); if the track isn't given, it asks. Also supports
-  batch mode (a list of repos → one briefing each plus within-track
-  pre-reads), live Q&A mode (paste what a team just claimed → sharp follow-up
-  probes mid-demo), and final-round mode (re-pull a finalist's repo, summarize
-  what changed, prep the fresh re-score). Advisory only: it never scores
-  Presentation from a repo, never runs team code, and the judge's own
-  scoresheet governs.
+  Advisory AI co-judge for TOA's "RAG the City" hackathon: pre-reads a team's git repo and produces a rubric-anchored Judge Briefing. For judges, mentor-judges, and organizers evaluating other teams' work — never for competitors: skip it when a team wants help building, debugging, or reviewing their own submission. Use whenever judge-side language ("judge this repo", "score this submission", "prep me for this demo", "brief me on the finalists") pairs with a team's repo (git URL or local path); it also needs the declared track (A — Engine, B — Experience) and asks if not given. Supports batch mode (a repo list → one briefing each plus within-track pre-reads), live Q&A mode (paste a team's claim → sharp follow-up probes mid-demo), and final-round mode (re-pull a finalist's repo and summarize what changed). Advisory only: it never scores Presentation from a repo, never runs team code, and the judge's own scoresheet governs.
+
 ---
 
 # RAG the City — Judge's Repo Review
