@@ -1,0 +1,48 @@
+[
+  {
+    "stop": 1,
+    "millbrook_question": [
+      "What is the population of Millbrook?",
+      "Dr. Okafor treated a patient in the emergency department. What was the patient's condition, and what is Dr. Okafor's relationship to the patient?"
+    ],
+    "failure": "The warm-up works — population is a single-chunk fact, and naive RAG is fine at those. Then it conflates TWO different Dr. Okafors: every chunk containing the name scores high, and embedding similarity cannot tell entities apart. Similarity is not identity.",
+    "boston_twin": "\"Show 311 complaints on Washington St\" — Washington St exists in Roslindale, Dorchester, and downtown. Same name, different places; similarity ≠ identity.",
+    "rubric_tie": "RAG Quality & Grounding /4"
+  },
+  {
+    "stop": 2,
+    "millbrook_question": [
+      "How long has Ahmed Al-Rashid been operating his bakery, and what was his career before opening it?"
+    ],
+    "failure": "The answer — 30 years — appears in NO chunk. It must be computed from dates scattered across documents (opened 1994, document dated 2024). Retrieval returns date-bearing text, but a naive pipeline never anchors 'now' and never does the arithmetic.",
+    "boston_twin": "\"Is crime in Roxbury getting better or worse over the last 3 years?\" — the event page's own Temporal RAG example: the trend is computed across time, never stored in any row.",
+    "rubric_tie": "Track A: Temporal RAG"
+  },
+  {
+    "stop": 3,
+    "millbrook_question": [
+      "What is the current load capacity of Bridge 7, and are there any restrictions in place?"
+    ],
+    "failure": "The corpus holds THREE numbers: 40 tons (original design), 25 tons (current rating), 15 tons (emergency restriction). Top-k retrieval surfaces whichever one embeds closest to the query, and the baseline confidently returns just ONE.",
+    "boston_twin": "The Operating Budget CSV and the budget-narrative PDF give different numbers for the same line item — the event page's Multi-Source example. Which source wins, and how would your system know?",
+    "rubric_tie": "RAG Quality & Grounding + Multi-Source"
+  },
+  {
+    "stop": 4,
+    "millbrook_question": [
+      "What happened to Isabella Romano's parents?"
+    ],
+    "failure": "The baseline invents a backstory. The documents say 'parents deceased' and nothing more — the correct behavior is grounded abstention. Retrieval always returns SOMETHING topically adjacent, and the generator fills the gap. The rubric calls fabrication a CRITICAL FAILURE.",
+    "boston_twin": "\"Why was this restaurant's license suspended?\" — inspections data has violation codes, not narrative reasons. The right answer is \"the data doesn't say.\"",
+    "rubric_tie": "RAG Quality /4 anchor: says 'I don't know' instead of guessing"
+  },
+  {
+    "stop": 5,
+    "millbrook_question": [
+      "How many degrees of separation exist between Ahmed Al-Rashid and Dr. Kwame Okafor, and what is the path?"
+    ],
+    "failure": "No chunk contains the path. Each hop lives in a different document genre (bio, diary, transcript, minutes), and similarity search cannot chain edges — this needs an entity graph.",
+    "boston_twin": "Property owner → violations → permits → neighborhood patterns — the event page's Graph-Enhanced RAG example.",
+    "rubric_tie": "Track A: Graph / Agentic RAG"
+  }
+]

@@ -1,0 +1,4 @@
+# Track A "Best Engine" extras — install on top of requirements.txt:
+#   .venv/bin/pip install -r requirements-track-a.txt
+docling
+ragas

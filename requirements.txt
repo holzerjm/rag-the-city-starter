@@ -1,0 +1,13 @@
+# Slim shared foundation — both tracks build on this.
+# Heavy Track A deps (docling, ragas) live in requirements-track-a.txt.
+chromadb
+langchain
+langchain-community
+langchain-ollama
+langchain-text-splitters
+rank_bm25
+pandas
+requests
+streamlit
+folium
+plotly
