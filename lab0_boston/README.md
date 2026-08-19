@@ -1,4 +1,4 @@
-# Level 2: The Fort Point Files
+# Lab 0: The Fort Point Files
 
 The Millbrook failure modes, rebuilt on Boston-shaped documents. The story spine is
 real geography: the **Northern Avenue Bridge** over the Fort Point Channel — a 1908
@@ -16,14 +16,17 @@ permit record, an engineering assessment, bios, and a diary.
 ## Run it
 
 ```bash
-make lab0-boston                                  # split the corpus, build the index, guided intro
-make lab0-boston-ask Q="How long has Yolanda Peña been running Gull & Anchor Bakery?"
-make lab0-boston-score                            # judge all 24 questions, print your band
+make lab0                                  # split the corpus + the 6-stop guided tour
+make lab0-ask Q="How long has Yolanda Peña been running Gull & Anchor Bakery?"
+make lab0-score                            # judge all 24 questions, print your band
 ```
 
-The engine is the same deliberately naive baseline as Lab 0 (`lab0_millbrook/`),
-pointed at this corpus via `--corpus-dir` / `--questions` / `--collection` flags —
-Millbrook behavior is unchanged when the flags are omitted.
+The engine lives in `lab0_millbrook/` — the deliberately naive baseline built for
+the original Millbrook challenge. Its defaults now point at this corpus; the
+Makefile passes `--corpus-dir` / `--questions` / `--collection` explicitly for both
+editions (distinct chroma collections, `fortpoint_naive` vs `millbrook_naive`), and
+`make lab0-millbrook` runs the original tour. The six tour stops live in
+[`tour_stops.json`](tour_stops.json).
 
 ## What's different from Millbrook
 
@@ -32,8 +35,8 @@ Millbrook behavior is unchanged when the flags are omitted.
 Missing Context Scenarios ×3, Domain Confusion ×3, Relationship Complexity ×3,
 Multilingual And Cultural Complexity ×2, Technical Domain Integration ×2) **plus a
 ninth category Millbrook lacks — Aggregation & Counting ×2** — counting over the
-311 export's rows, where a fixed-size chunker slices the table in half. That is the
-tabular-chunking failure you'll meet the moment you index Saturday's real 311 CSV.
+311 export's rows, where no chunk contains a count. That is the tabular-chunking
+failure you'll meet the moment you index Saturday's real 311 CSV.
 
 Every failure is real in the corpus: the budget contradiction's two numbers are both
 present ($4,200,000 in the CSV vs $3.65 million in the narrative), the

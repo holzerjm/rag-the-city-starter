@@ -4,7 +4,9 @@ Naive on purpose:
   * fixed ~500-token chunks, no overlap — chunk borders cut entities and
     dates in half, so answers that need two halves never see both;
   * chromadb's default embedder (all-MiniLM-L6-v2) — small, monolingual,
-    and blind to the Arabic/Spanish/Mandarin spans in the transcript;
+    and blind to the non-English spans in the transcripts (Spanish /
+    Haitian Creole / Chinese in Fort Point; Arabic / Spanish / Mandarin
+    in Millbrook);
   * top-3 similarity, no reranking, no metadata filters — whatever
     LOOKS like the question wins, and similarity is not identity;
   * one LLM call over the raw chunks — no date arithmetic, no entity
@@ -13,11 +15,14 @@ Naive on purpose:
 We print the retrieved chunks BEFORE the answer so that when the model
 is wrong, you can see exactly which chunk lied to it.
 
-CLI:  python -m lab0_millbrook.naive_rag "What is the population of Millbrook?"
+CLI:  python -m lab0_millbrook.naive_rag "Which Peña spoke at the May 19 committee meeting?"
 
-Other corpora reuse this baseline via --corpus-dir / --collection (e.g.
-Level 2's lab0_boston). Defaults are unchanged: with no flags it runs the
-Millbrook corpus exactly as before.
+Defaults point at Lab 0 — The Fort Point Files (lab0_boston). The
+original Millbrook corpus runs via explicit --corpus-dir / --collection
+flags; the Makefile passes explicit flags for BOTH editions, so behavior
+never depends on these defaults. Each edition gets its own chroma
+collection (fortpoint_naive / millbrook_naive), so the indexes never
+collide.
 """
 from __future__ import annotations
 
@@ -29,9 +34,9 @@ from pathlib import Path
 import chromadb
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DOCS_DIR = Path(__file__).resolve().parent / "corpus" / "docs"
+DOCS_DIR = REPO_ROOT / "lab0_boston" / "corpus" / "docs"  # Fort Point default
 CHROMA_DIR = str(REPO_ROOT / ".chroma" / "lab0")
-COLLECTION = "millbrook_naive"
+COLLECTION = "fortpoint_naive"  # Millbrook uses millbrook_naive via --collection
 CHUNK_TOKENS = 500  # fixed size, no overlap — deliberately naive
 TOP_K = 3
 MODEL = os.environ.get("OLLAMA_MODEL", "granite3.1-dense:8b")
@@ -52,11 +57,15 @@ def _chunk(text: str, size: int = CHUNK_TOKENS) -> list[str]:
 def build_index(docs_dir: Path = DOCS_DIR, collection: str = COLLECTION) -> chromadb.Collection:
     """Index docs_dir into a persistent chroma collection (idempotent)."""
     if not any(docs_dir.glob("doc*.md")):
-        if docs_dir == DOCS_DIR:
-            from lab0_millbrook.split_corpus import split
-            split()
+        from lab0_millbrook.split_corpus import FULL_FOR_DOCS, split
+        full = FULL_FOR_DOCS.get(Path(docs_dir).resolve())
+        if full is not None:  # a known edition — split its corpus in place
+            split(full, docs_dir)
         else:
-            raise SystemExit(f"No doc*.md files in {docs_dir} — run the splitter first (e.g. make lab0-boston).")
+            raise SystemExit(
+                f"No doc*.md files in {docs_dir} — run the splitter first:\n"
+                f"  python -m lab0_millbrook.split_corpus --input <corpus.md> --outdir {docs_dir}"
+            )
     client = chromadb.PersistentClient(path=CHROMA_DIR)
     coll = client.get_or_create_collection(collection)
     if coll.count() > 0:
@@ -114,8 +123,8 @@ def ask(question: str, docs_dir: Path = DOCS_DIR,
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Ask the deliberately naive RAG baseline one question.")
-    parser.add_argument("--corpus-dir", type=Path, default=DOCS_DIR, help="split docs directory (default: Millbrook)")
-    parser.add_argument("--collection", default=COLLECTION, help="chroma collection name (default: millbrook_naive)")
+    parser.add_argument("--corpus-dir", type=Path, default=DOCS_DIR, help="split docs directory (default: Fort Point)")
+    parser.add_argument("--collection", default=COLLECTION, help="chroma collection name (default: fortpoint_naive)")
     parser.add_argument("question", nargs="*", help="the question to ask")
     args = parser.parse_args()
     question = " ".join(args.question).strip()

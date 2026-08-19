@@ -2,13 +2,15 @@
 
 Starter kit for **RAG the City**, The Open Accelerator's one-day RAG hackathon over
 Boston's open data (Saturday, August 22, 2026 — Fort Point, Boston). The premise:
-**feel naive RAG break before you build something better.** Lab 0 hands you a tiny
-fictional city (Millbrook) with ten documents engineered to make a vanilla
-chunk-embed-retrieve pipeline conflate people, botch dates, pick one of three
-contradictory numbers, and invent a dead couple's backstory — then maps every one of
-those failures onto the real Analyze Boston datasets you'll build on Saturday. You
-watch the baseline fail in an inspectable, 30-minute tour, and then you spend hack
-day killing the failure mode you choose.
+**feel naive RAG break before you build something better.** Lab 0 hands you **The
+Fort Point Files** — a fictional 2026 reopening study of the very real Northern
+Avenue Bridge, a short walk from the venue — eleven documents engineered to make a
+vanilla chunk-embed-retrieve pipeline merge two Peñas into one person, botch date
+arithmetic, pick one of two contradictory budget figures, invent a cause the
+inspection report never states, and miscount a CSV. Every document is shaped like
+the real Analyze Boston data you'll build on Saturday. You watch the baseline fail
+in an inspectable six-stop tour, and then you spend hack day killing the failure
+mode you choose.
 
 ## Quickstart
 
@@ -24,70 +26,76 @@ make lab0
 `granite3.1-dense:8b` is the default model everywhere; any Ollama model tag works
 (set `OLLAMA_MODEL=<tag>`). Run `make` alone to list every target.
 
-## Lab 0 — feel naive RAG break (~30 min)
+## Lab 0 — The Fort Point Files (~30 min)
 
-`make lab0` runs a 5-stop guided tour. Each stop asks the naive baseline a real
-Millbrook question, shows you the retrieved chunks and the (wrong) answer, then
-shows the **Boston twin** — the same failure waiting inside Saturday's data.
+`make lab0` splits the corpus and runs the 6-stop guided tour. Each stop asks the
+naive baseline a real Fort Point question, shows you the retrieved chunks and the
+(wrong) answer, then shows **Saturday's data shape** — where the identical failure
+waits inside the real Analyze Boston data.
 
-| # | Millbrook question | Naive-RAG failure | Boston twin (Saturday's data) | Rubric tie |
+> The Fort Point Files is a work of fiction created for RAG education. Characters, businesses, documents, and all numbers are invented; Boston place names are used fictitiously. Inspired by the Millbrook City RAG Challenge by William Caban (used with permission).
+
+| # | Fort Point question | Naive-RAG failure | Saturday's data shape | Rubric tie |
 |---|---|---|---|---|
-| 1 | "What is the population of Millbrook?" then "Dr. Okafor treated a patient — what condition, what relationship?" | warm-up works; then conflates TWO different Dr. Okafors | "Show 311 complaints on Washington St" — Washington St exists in Roslindale, Dorchester, downtown… similarity ≠ identity | RAG Quality /4 |
-| 2 | "How long has Ahmed Al-Rashid run his bakery?" | answer (30 yrs) is in NO chunk — needs date arithmetic | "Is crime in Roxbury getting better or worse over the last 3 years?" | Track A: Temporal RAG |
-| 3 | "What is Bridge 7's load capacity?" | corpus holds 40 (original), 25 (current), 15 (restriction) tons — baseline confidently returns ONE | Operating Budget CSV vs Budget-narrative PDF give different numbers for one line item | RAG Quality + Multi-Source |
-| 4 | "What happened to Isabella Romano's parents?" | invents a backstory; correct = grounded abstention ("parents deceased", nothing more) | "Why was this restaurant's license suspended?" — inspections data has violation codes, not narrative reasons; right answer is "the data doesn't say" | RAG Quality /4 anchor: "says 'I don't know' instead of guessing" |
-| 5 | "Degrees of separation: Ahmed Al-Rashid → Dr. Kwame Okafor?" | no chunk contains the path — needs entity graph | "Property owner → violations → permits → neighborhood patterns" | Track A: Graph/Agentic |
+| 1 | "When did the bridge close to all users?" then "Which Peña spoke at the May 19 committee meeting?" | warm-up works; then merges Yolanda (the bakery owner) and Camila (her daughter, the 'C. Peña' in the minutes) — similarity ≠ identity | 311 export & permit records repeat names and street names — same string, different people and places | RAG Quality /4 |
+| 2 | "How long had the bridge been closed to all users when the 2026 assessment was submitted?" | the answer (~11.5 years) is in NO chunk — needs date arithmetic across documents, and 1997 is the wrong anchor | trends over the crime & 311 CSVs are computed across dates, never stored in any row | Track A: Temporal RAG |
+| 3 | "How much does FY2027 commit to design and engineering?" | the budget CSV says $4,200,000, the narrative says $3.65M — the baseline confidently returns ONE | the real Operating Budget ships as a CSV and a narrative that can disagree on a line item | RAG Quality + Multi-Source |
+| 4 | "What caused Gull & Anchor's walk-in cooler failure?" | invents a cause; the inspection report holds violation codes only — correct = "the data doesn't say" | Food Establishment Inspections: codes and dispositions, no narrative reasons | RAG Quality /4 anchor: says 'I don't know' instead of guessing |
+| 5 | "Degrees of separation: Wilner Joseph → Deirdre Fitzgerald?" | no chunk contains the path — hops span transcript, minutes, and property record; needs an entity graph | property owner → violations → permits → neighborhood patterns across CSVs | Track A: Graph / Agentic RAG |
+| 6 | "How many 311 requests list a location at the bridge?" | no chunk contains a count — the answer (9 of 28 rows) exists only by iterating the table | "how many?" over the real 311 CSV — aggregation needs structured, row-aware retrieval | RAG Quality /4 — a confident wrong count is a fabrication |
 
 Then close the loop:
 
 ```bash
-make lab0-ask Q="What is the population of Millbrook?"   # ask anything yourself
-make lab0-score                                          # judge all 22 questions
+make lab0-ask Q="Which Peña gave public comment at the May 19 committee meeting?"   # ask anything yourself
+make lab0-score                                   # judge all 24 questions
 ```
 
-`make lab0-score` runs the full 22-question eval through an LLM judge and prints
-your band per the challenge rubric — EXCELLENT (90–100) / GOOD (75–89) /
-FAIR (60–74) / POOR (<60), with fabrication flagged as a CRITICAL FAILURE.
-Your goal Saturday is EXCELLENT — pick which failure you'll kill first.
-
-## Level 2: The Fort Point Files (`lab0_boston/`)
-
-The same failure modes rebuilt on Boston-shaped documents. The spine is real
-geography — the **Northern Avenue Bridge** over the Fort Point Channel, closed to
-vehicles since 1997 and fenced off from everyone since December 2014, a short walk
-from the venue — wrapped in a fictional 2026 reopening study. Eleven documents are
-shaped like Saturday's real data: a 311 export with CSV-ish rows, a food-inspection
-report, a budget CSV that disagrees with its own budget narrative on one line item,
-council committee minutes, a neighborhood weekly, a trilingual meeting transcript
-(Spanish / Haitian Creole / Chinese — Boston's actual 311 languages), a property &
-permit record, an engineering assessment, bios, and a diary. The 24 eval questions
-keep Millbrook's eight categories and add a ninth Millbrook lacks —
-**Aggregation & Counting** over the 311 rows, the tabular-chunking failure.
-
-> The Fort Point Files is a work of fiction created for RAG education. Characters, businesses, documents, and all numbers are invented; Boston place names are used fictitiously. Inspired by the Millbrook City RAG Challenge by William Caban (used with permission).
-
-```bash
-make lab0-boston                                  # split the corpus + build index + guided intro
-make lab0-boston-ask Q="How long has Yolanda Peña been running Gull & Anchor Bakery?"
-make lab0-boston-score                            # judge all 24 questions
-```
+`make lab0-score` runs the full 24-question eval — nine failure categories — through
+an LLM judge and prints your band per the challenge rubric — EXCELLENT (90–100) /
+GOOD (75–89) / FAIR (60–74) / POOR (<60), with fabrication flagged as a CRITICAL
+FAILURE. Your goal Saturday is EXCELLENT — pick which failure you'll kill first.
 
 See [`lab0_boston/README.md`](lab0_boston/README.md) for the scenario and question
-breakdown. The engine is the Millbrook baseline pointed at the Boston corpus via
-`--corpus-dir` / `--questions` / `--collection`; Millbrook defaults are untouched.
+breakdown.
+
+## Origin: the Millbrook City RAG Challenge
+
+The Fort Point Files' failure-mode design comes straight from the
+[Millbrook City RAG Challenge](https://gist.github.com/williamcaban/8764f13aaa5c4b0768033671483f6c0f)
+by **William Caban** — a fictive city (Millbrook, pop. 47,832, story spine: the
+failing Bridge 7) whose ten documents and 22 eval questions calibrated every trap
+above. The Boston edition rebuilds those traps on Boston-shaped documents and adds
+a ninth category Millbrook lacks — **Aggregation & Counting** (24 questions vs 22).
+The original ships in this repo uncut, and its five-stop tour maps each Millbrook
+failure to its Boston twin:
+
+```bash
+make lab0-millbrook                               # the original 5-stop guided tour
+make lab0-millbrook-ask Q="What is the population of Millbrook?"
+make lab0-millbrook-score                         # judge all 22 Millbrook questions
+```
+
+Millbrook City RAG Challenge © William Caban — used with permission. All content is
+fictional, AI-generated synthetic data.
 
 ## Repo map
 
 ```
-lab0_millbrook/        Lab 0: the Millbrook corpus and the naive baseline
+lab0_boston/           Lab 0: The Fort Point Files — corpus, questions, tour stops
+  corpus/fortpoint_full.md      the 11-document corpus (fiction; see disclaimer)
+  corpus/docs/                  the corpus split into 11 per-document files
+  questions.json                24 eval questions, 9 categories
+  tour_stops.json               the 6-stop guided tour data      (make lab0)
+lab0_millbrook/        The original Millbrook challenge + the shared naive engine
   corpus/millbrook_full.md      vendored corpus (see attribution below)
   corpus/docs/                  the corpus split into 10 per-document files
-  split_corpus.py               splitter (run automatically on first index)
+  split_corpus.py               splitter for both corpora
   naive_rag.py                  the deliberately naive baseline + CLI
-  tour.py                       the 5-stop guided tour        (make lab0)
-  judge.py                      LLM judge over all 22 questions (make lab0-score)
+  tour.py                       guided-tour runner   (make lab0 / make lab0-millbrook)
+  judge.py                      LLM judge over a question set (make lab0-score)
   questions.json                22 eval questions, 8 categories (generated)
-  boston_parallels.json         the 5-stop Millbrook→Boston mapping (data)
+  boston_parallels.json         the original 5-stop Millbrook→Boston mapping (data)
   tools/parse_qna.py            regenerates questions.json from the QnA file
 boston/                Shared data plumbing for hack day
   download.py                   CKAN-resolved dataset downloads (make data)

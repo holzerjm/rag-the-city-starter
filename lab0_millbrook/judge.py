@@ -1,20 +1,21 @@
-"""LLM-as-judge over all 22 Millbrook questions.
+"""LLM-as-judge over an eval question set (default: the 24 Fort Point questions).
 
 For each question the naive baseline answers, then a second LLM call
-compares that answer against the gist's expected answer AND its list of
+compares that answer against the set's expected answer AND its list of
 "wrong answers a RAG might give" (ready-made distractors). Verdicts:
 correct / partially_correct / wrong / fabricated. Fabrication is called
-out separately because the gist's rubric makes it a CRITICAL FAILURE —
-a confident lie is worse than a miss.
+out separately because the challenge rubric makes it a CRITICAL FAILURE
+— a confident lie is worse than a miss.
 
-Scoring bands (gist rubric): EXCELLENT 90-100 / GOOD 75-89 /
+Scoring bands (challenge rubric): EXCELLENT 90-100 / GOOD 75-89 /
 FAIR 60-74 / POOR <60. Points: correct=1, partially_correct=0.5.
 
 Run:  make lab0-score     (or: python -m lab0_millbrook.judge)
 
-Other corpora reuse this judge via --corpus-dir / --questions /
---collection (e.g. Level 2's lab0_boston). Defaults are unchanged: with
-no flags it scores Millbrook exactly as before.
+The original 22 Millbrook questions run via explicit --corpus-dir /
+--questions / --collection flags — that's make lab0-millbrook-score.
+The Makefile passes explicit flags for BOTH editions, so behavior never
+depends on these defaults.
 """
 from __future__ import annotations
 
@@ -26,7 +27,7 @@ from pathlib import Path
 
 from lab0_millbrook import naive_rag
 
-QUESTIONS = Path(__file__).resolve().parent / "questions.json"
+QUESTIONS = naive_rag.REPO_ROOT / "lab0_boston" / "questions.json"  # Fort Point default
 VERDICTS = ("correct", "partially_correct", "wrong", "fabricated")
 POINTS = {"correct": 1.0, "partially_correct": 0.5, "wrong": 0.0, "fabricated": 0.0}
 
@@ -66,11 +67,11 @@ def band(pct: float) -> str:
 def main() -> None:
     parser = argparse.ArgumentParser(description="LLM-judge the naive baseline over an eval question set.")
     parser.add_argument("--corpus-dir", type=Path, default=naive_rag.DOCS_DIR,
-                        help="split docs directory (default: Millbrook)")
+                        help="split docs directory (default: Fort Point)")
     parser.add_argument("--questions", type=Path, default=QUESTIONS,
-                        help="questions.json path (default: Millbrook's 22)")
+                        help="questions.json path (default: Fort Point's 24)")
     parser.add_argument("--collection", default=naive_rag.COLLECTION,
-                        help="chroma collection name (default: millbrook_naive)")
+                        help="chroma collection name (default: fortpoint_naive)")
     args = parser.parse_args()
 
     questions = json.loads(args.questions.read_text(encoding="utf-8"))

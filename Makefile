@@ -6,10 +6,14 @@ VENV   := .venv
 PY     := $(VENV)/bin/python
 PIP    := $(VENV)/bin/pip
 
-.PHONY: help setup data lab0 lab0-ask lab0-score lab0-boston lab0-boston-ask lab0-boston-score track-a track-b
+# Explicit per-edition flags — behavior never depends on Python defaults.
+FORTPOINT_FLAGS := --corpus-dir lab0_boston/corpus/docs --collection fortpoint_naive
+MILLBROOK_FLAGS := --corpus-dir lab0_millbrook/corpus/docs --collection millbrook_naive
+
+.PHONY: help setup data lab0 lab0-ask lab0-score lab0-millbrook lab0-millbrook-ask lab0-millbrook-score track-a track-b
 
 help: ## Show every target and what it does
-	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-12s %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-21s %s\n", $$1, $$2}'
 
 setup: ## Create .venv and install the slim base requirements.txt
 	python3 -m venv $(VENV)
@@ -19,23 +23,25 @@ setup: ## Create .venv and install the slim base requirements.txt
 data: ## Download the two lab datasets (311 + food inspections) from Analyze Boston via CKAN
 	$(PY) boston/download.py
 
-lab0: ## Run Lab 0 — the 5-stop guided tour where naive RAG breaks in front of you
-	$(PY) -m lab0_millbrook.tour
+lab0: ## Run Lab 0 — The Fort Point Files: split the corpus + the 6-stop guided tour
+	$(PY) -m lab0_millbrook.split_corpus --input lab0_boston/corpus/fortpoint_full.md --outdir lab0_boston/corpus/docs
+	$(PY) -m lab0_millbrook.tour --stops lab0_boston/tour_stops.json $(FORTPOINT_FLAGS)
 
-lab0-ask: ## Ask the naive baseline one question: make lab0-ask Q="What is the population of Millbrook?"
-	$(PY) -m lab0_millbrook.naive_rag "$(Q)"
+lab0-ask: ## Ask the naive baseline one Fort Point question: make lab0-ask Q="..."
+	$(PY) -m lab0_millbrook.naive_rag $(FORTPOINT_FLAGS) "$(Q)"
 
-lab0-score: ## Judge all 22 Millbrook questions with an LLM and print your scoring band
-	$(PY) -m lab0_millbrook.judge
+lab0-score: ## Judge all 24 Fort Point questions (9 categories) with an LLM and print your scoring band
+	$(PY) -m lab0_millbrook.judge $(FORTPOINT_FLAGS) --questions lab0_boston/questions.json
 
-lab0-boston: ## Level 2 — split The Fort Point Files corpus, build its index, guided intro
-	$(PY) -m lab0_boston.intro
+lab0-millbrook: ## The original — William Caban's Millbrook City RAG Challenge: 5-stop tour
+	$(PY) -m lab0_millbrook.split_corpus --input lab0_millbrook/corpus/millbrook_full.md --outdir lab0_millbrook/corpus/docs
+	$(PY) -m lab0_millbrook.tour --stops lab0_millbrook/boston_parallels.json $(MILLBROOK_FLAGS)
 
-lab0-boston-ask: ## Ask the baseline one Fort Point question: make lab0-boston-ask Q="..."
-	$(PY) -m lab0_millbrook.naive_rag --corpus-dir lab0_boston/corpus/docs --collection fortpoint_naive "$(Q)"
+lab0-millbrook-ask: ## Ask the baseline one Millbrook question: make lab0-millbrook-ask Q="..."
+	$(PY) -m lab0_millbrook.naive_rag $(MILLBROOK_FLAGS) "$(Q)"
 
-lab0-boston-score: ## Judge all 24 Fort Point questions with an LLM and print your scoring band
-	$(PY) -m lab0_millbrook.judge --corpus-dir lab0_boston/corpus/docs --questions lab0_boston/questions.json --collection fortpoint_naive
+lab0-millbrook-score: ## Judge all 22 Millbrook questions with an LLM and print your scoring band
+	$(PY) -m lab0_millbrook.judge $(MILLBROOK_FLAGS) --questions lab0_millbrook/questions.json
 
 track-a: ## Track A demo — dense-only vs BM25+dense hybrid retrieval, side by side
 	$(PY) track_a_engine/hybrid_search.py
