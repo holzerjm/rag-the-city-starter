@@ -131,9 +131,9 @@ page, "LangChain + ChromaDB is completely fine." Start from:
 
 ## For judges
 
-Judging materials live separately so team clones stay lean: the advisory
-AI co-judge skill is at [holzerjm/rag-city-judge](https://github.com/holzerjm/rag-city-judge),
-and the full Judges’ Guide is at
+Judging materials live separately so team clones stay lean. Everything a
+judge needs — the guide, the printable scoring sheet, and the advisory AI
+co-judge kit — is at
 <https://the-open-accelerator.com/hackathon/upcoming/RAGtheCityHack/judging/>.
 
 ## Datasets (Analyze Boston)
