@@ -103,8 +103,6 @@ boston/                Shared data plumbing for hack day
   query.py                      grounded-answer CLI with citations
 track_a_engine/        Track A "Best Engine" starting points
 track_b_experience/    Track B "Best Experience" starting points
-.claude/skills/rag-city-judge/   AI co-judge skill for judges — auto-loads when
-                                 you run `claude` inside this repo
 ```
 
 ## Track A — Best Engine (`track_a_engine/`)
@@ -131,32 +129,12 @@ page, "LangChain + ChromaDB is completely fine." Start from:
 - `components/map_answer.py` — folium heatmap from a 311 dataframe, embeddable in
   Streamlit. Citizens think in places, not row ids.
 
-## For judges — the AI co-judge skill
+## For judges
 
-This repo ships a Claude Code skill,
-[`rag-city-judge`](.claude/skills/rag-city-judge/), that pre-reads a
-submission repo and produces an advisory Judge Briefing: provisional rubric
-scores with file-level evidence, demo-watch notes, Q&A probes, a red-flag
-scan, and a scoresheet transfer aid. Zero install — cloning this repo *is* the
-setup:
-
-```bash
-git clone https://github.com/holzerjm/rag-the-city-starter.git
-cd rag-the-city-starter
-claude
-```
-
-Then just ask:
-
-- "Judge this Track A submission: \<repo URL\>"
-- "Batch: here are the Track B submissions: …" — one briefing per team plus a
-  within-track pre-read (best run at the 3:15 PM code freeze)
-- "They just claimed X — what should I ask?" — fast Q&A probes mid-demo
-- "Re-read \<repo URL\> for the final round" — delta since Round 1; the final
-  is scored fresh
-
-Static review only — it never runs team code — and it is advisory decision
-support: the judge's own integers on the printed scoresheet govern.
+Judging materials live separately so team clones stay lean: the advisory
+AI co-judge skill is at [holzerjm/rag-city-judge](https://github.com/holzerjm/rag-city-judge),
+and the full Judges’ Guide is at
+<https://the-open-accelerator.com/hackathon/upcoming/RAGtheCityHack/judging/>.
 
 ## Datasets (Analyze Boston)
 
